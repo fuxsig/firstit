@@ -1,0 +1,28 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: second-abacus-285111/firstit
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/{{.IMAGE_NAME}}:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: firstit
+        chartPath: charts/firstit
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/{{.IMAGE_NAME}}'
+          image.tag: '{{.DIGEST_HEX}}'
